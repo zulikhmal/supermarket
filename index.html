@@ -37,7 +37,7 @@
                         <i class="fa-solid fa-store text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg leading-tight">Price Compare</h1>
+                        <h1 class="font-bold text-lg leading-tight">Price Comparison</h1>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Supermarket Retail Price Intelligence</p>
                     </div>
                 </div>
@@ -199,9 +199,10 @@
                 <button onclick="closeRetailerModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <div class="p-6 space-y-4">
-                <form onsubmit="addRetailer(event)" class="flex gap-2">
-                    <input type="text" id="newRetailerInput" required placeholder="New supermarket name..." class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Add</button>
+                <form id="retailerForm" onsubmit="saveRetailer(event)" class="flex gap-2">
+                    <input type="hidden" id="editRetailerIndex">
+                    <input type="text" id="newRetailerInput" required placeholder="Supermarket name..." class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <button type="submit" id="retailerSubmitBtn" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Add</button>
                 </form>
                 <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
                     <h4 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Existing Retailers</h4>
@@ -237,7 +238,6 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Default Sample Data
         const defaultRetailers = ['Mydin', "Lotus's", 'Giant', 'AEON'];
         const defaultCategories = ['Rice & Grains', 'Dairy & Eggs', 'Beverages', 'Canned Goods', 'Cooking Oil'];
         const defaultItems = [
@@ -264,7 +264,6 @@
         let categories = JSON.parse(localStorage.getItem('supermarket_categories')) || defaultCategories;
         let items = JSON.parse(localStorage.getItem('supermarket_items')) || defaultItems;
 
-        // Dark mode initialization
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
         }
@@ -289,7 +288,6 @@
             }
         }
 
-        // Initialization on Load
         window.addEventListener('DOMContentLoaded', () => {
             renderDashboard();
         });
@@ -301,7 +299,6 @@
         }
 
         function updateDropdowns() {
-            // Retailer Filter & Modal Select
             const retFilter = document.getElementById('retailerFilter');
             const itemRetModal = document.getElementById('itemRetailerInput');
             const currRetFilter = retFilter.value;
@@ -316,7 +313,6 @@
             retFilter.value = currRetFilter;
             if (retailers.includes(currItemRet)) itemRetModal.value = currItemRet;
 
-            // Category Filter & Modal Select
             const catFilter = document.getElementById('categoryFilter');
             const itemCatModal = document.getElementById('itemCategoryInput');
             const currCatFilter = catFilter.value;
@@ -502,6 +498,9 @@
 
         // Retailer Management
         function openRetailerModal() {
+            document.getElementById('editRetailerIndex').value = '';
+            document.getElementById('newRetailerInput').value = '';
+            document.getElementById('retailerSubmitBtn').innerText = 'Add';
             renderRetailerList();
             document.getElementById('retailerModal').classList.remove('hidden');
         }
@@ -517,25 +516,56 @@
                 container.innerHTML += `
                     <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 text-sm">
                         <span>${ret}</span>
-                        <button onclick="deleteRetailer(${idx})" class="text-slate-400 hover:text-red-600 transition"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <div class="flex items-center space-x-1">
+                            <button onclick="editRetailer(${idx})" class="p-1 text-slate-400 hover:text-blue-600 transition" title="Edit Retailer"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteRetailer(${idx})" class="p-1 text-slate-400 hover:text-red-600 transition" title="Delete Retailer"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
                     </div>
                 `;
             });
         }
 
-        function addRetailer(event) {
+        function saveRetailer(event) {
             event.preventDefault();
+            const editIdx = document.getElementById('editRetailerIndex').value;
             const input = document.getElementById('newRetailerInput');
             const val = input.value.trim();
-            if (val && !retailers.includes(val)) {
-                retailers.push(val);
-                input.value = '';
-                saveData();
-                renderRetailerList();
-                renderDashboard();
+
+            if (!val) return;
+
+            if (editIdx !== '') {
+                const oldName = retailers[parseInt(editIdx)];
+                if (retailers.includes(val) && val !== oldName) {
+                    alert('Retailer name already exists.');
+                    return;
+                }
+                // Update retailer name in retailers array
+                retailers[parseInt(editIdx)] = val;
+                // Update retailer name in all associated items
+                items.forEach(i => {
+                    if (i.retailer === oldName) i.retailer = val;
+                });
+                document.getElementById('editRetailerIndex').value = '';
+                document.getElementById('retailerSubmitBtn').innerText = 'Add';
             } else {
-                alert('Retailer already exists or is empty.');
+                if (retailers.includes(val)) {
+                    alert('Retailer already exists.');
+                    return;
+                }
+                retailers.push(val);
             }
+
+            input.value = '';
+            saveData();
+            renderRetailerList();
+            renderDashboard();
+        }
+
+        function editRetailer(index) {
+            document.getElementById('editRetailerIndex').value = index;
+            document.getElementById('newRetailerInput').value = retailers[index];
+            document.getElementById('retailerSubmitBtn').innerText = 'Update';
+            document.getElementById('newRetailerInput').focus();
         }
 
         function deleteRetailer(index) {
