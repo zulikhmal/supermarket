@@ -37,16 +37,19 @@
                         <i class="fa-solid fa-store text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg leading-tight">Price Comparison</h1>
+                        <h1 class="font-bold text-lg leading-tight">HargaCompare</h1>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Supermarket Retail Price Intelligence</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <button onclick="openCategoryModal()" class="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition">
-                        <i class="fa-solid fa-tags mr-2 text-brand-500"></i> Manage Categories
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button onclick="openRetailerModal()" class="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition">
+                        <i class="fa-solid fa-store mr-1.5 text-brand-500"></i> Retailers
                     </button>
-                    <button onclick="openItemModal()" class="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium shadow-sm transition">
-                        <i class="fa-solid fa-plus mr-2"></i> Add Item Price
+                    <button onclick="openCategoryModal()" class="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition">
+                        <i class="fa-solid fa-tags mr-1.5 text-brand-500"></i> Categories
+                    </button>
+                    <button onclick="openItemModal()" class="inline-flex items-center px-3 sm:px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs sm:text-sm font-medium shadow-sm transition">
+                        <i class="fa-solid fa-plus mr-1.5"></i> Add Item
                     </button>
                     <button onclick="toggleDarkMode()" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition" title="Toggle Dark Mode">
                         <i class="fa-solid fa-moon dark:hidden"></i>
@@ -85,7 +88,7 @@
                     </div>
                     <div>
                         <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Retailers Tracked</p>
-                        <h3 id="statRetailers" class="text-2xl font-bold mt-0.5">4</h3>
+                        <h3 id="statRetailers" class="text-2xl font-bold mt-0.5">0</h3>
                     </div>
                 </div>
                 <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center space-x-4">
@@ -113,10 +116,6 @@
                     </select>
                     <select id="retailerFilter" onchange="renderDashboard()" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         <option value="">All Retailers</option>
-                        <option value="Mydin">Mydin</option>
-                        <option value="Lotus's">Lotus's</option>
-                        <option value="Giant">Giant</option>
-                        <option value="AEON">AEON</option>
                     </select>
                     <button onclick="resetData()" class="px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition" title="Reset to default sample data">
                         <i class="fa-solid fa-rotate-right mr-1"></i> Reset Data
@@ -135,7 +134,7 @@
                     <i class="fa-solid fa-box-open"></i>
                 </div>
                 <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200">No supermarket items found</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Try adjusting your search or category filter, or click "Add Item Price" to start tracking.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Try adjusting your search or filter, or click "Add Item" to start tracking.</p>
                 <button onclick="openItemModal()" class="mt-4 inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium shadow-sm transition">
                     <i class="fa-solid fa-plus mr-2"></i> Add Item
                 </button>
@@ -164,12 +163,9 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Retailer / Supermarket</label>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Retailer</label>
                         <select id="itemRetailerInput" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                            <option value="Mydin">Mydin</option>
-                            <option value="Lotus's">Lotus's</option>
-                            <option value="Giant">Giant</option>
-                            <option value="AEON">AEON</option>
+                            <!-- Populated dynamically -->
                         </select>
                     </div>
                 </div>
@@ -192,6 +188,28 @@
                     <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Save Price</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Retailer Management Modal -->
+    <div id="retailerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="font-bold text-lg">Manage Retailers</h3>
+                <button onclick="closeRetailerModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <form onsubmit="addRetailer(event)" class="flex gap-2">
+                    <input type="text" id="newRetailerInput" required placeholder="New supermarket name..." class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Add</button>
+                </form>
+                <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                    <h4 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Existing Retailers</h4>
+                    <div id="retailerListContainer" class="max-h-48 overflow-y-auto space-y-2 pr-1">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -220,6 +238,7 @@
     <!-- JavaScript Application Logic -->
     <script>
         // Default Sample Data
+        const defaultRetailers = ['Mydin', "Lotus's", 'Giant', 'AEON'];
         const defaultCategories = ['Rice & Grains', 'Dairy & Eggs', 'Beverages', 'Canned Goods', 'Cooking Oil'];
         const defaultItems = [
             { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: 'Mydin', price: 26.50, stock: 'In Stock' },
@@ -241,6 +260,7 @@
             { name: 'Saji Cooking Oil 5kg', category: 'Cooking Oil', retailer: 'AEON', price: 31.20, stock: 'In Stock' }
         ];
 
+        let retailers = JSON.parse(localStorage.getItem('supermarket_retailers')) || defaultRetailers;
         let categories = JSON.parse(localStorage.getItem('supermarket_categories')) || defaultCategories;
         let items = JSON.parse(localStorage.getItem('supermarket_items')) || defaultItems;
 
@@ -254,12 +274,14 @@
         }
 
         function saveData() {
+            localStorage.setItem('supermarket_retailers', JSON.stringify(retailers));
             localStorage.setItem('supermarket_categories', JSON.stringify(categories));
             localStorage.setItem('supermarket_items', JSON.stringify(items));
         }
 
         function resetData() {
-            if(confirm('Reset all items and categories to default sample data?')) {
+            if(confirm('Reset all items, categories, and retailers to default sample data?')) {
+                retailers = [...defaultRetailers];
                 categories = [...defaultCategories];
                 items = [...defaultItems];
                 saveData();
@@ -273,27 +295,41 @@
         });
 
         function renderDashboard() {
-            updateCategoryDropdowns();
+            updateDropdowns();
             renderStatistics();
             renderConsolidatedCards();
         }
 
-        function updateCategoryDropdowns() {
-            const filterSelect = document.getElementById('categoryFilter');
-            const modalSelect = document.getElementById('itemCategoryInput');
-            const currentFilter = filterSelect.value;
-            const currentModalVal = modalSelect.value;
+        function updateDropdowns() {
+            // Retailer Filter & Modal Select
+            const retFilter = document.getElementById('retailerFilter');
+            const itemRetModal = document.getElementById('itemRetailerInput');
+            const currRetFilter = retFilter.value;
+            const currItemRet = itemRetModal.value;
 
-            filterSelect.innerHTML = '<option value="">All Categories</option>';
-            modalSelect.innerHTML = '';
-
-            categories.forEach(cat => {
-                filterSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
-                modalSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            retFilter.innerHTML = '<option value="">All Retailers</option>';
+            itemRetModal.innerHTML = '';
+            retailers.forEach(r => {
+                retFilter.innerHTML += `<option value="${r}">${r}</option>`;
+                itemRetModal.innerHTML += `<option value="${r}">${r}</option>`;
             });
+            retFilter.value = currRetFilter;
+            if (retailers.includes(currItemRet)) itemRetModal.value = currItemRet;
 
-            filterSelect.value = currentFilter;
-            if (categories.includes(currentModalVal)) modalSelect.value = currentModalVal;
+            // Category Filter & Modal Select
+            const catFilter = document.getElementById('categoryFilter');
+            const itemCatModal = document.getElementById('itemCategoryInput');
+            const currCatFilter = catFilter.value;
+            const currItemCat = itemCatModal.value;
+
+            catFilter.innerHTML = '<option value="">All Categories</option>';
+            itemCatModal.innerHTML = '';
+            categories.forEach(cat => {
+                catFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+                itemCatModal.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+            catFilter.value = currCatFilter;
+            if (categories.includes(currItemCat)) itemCatModal.value = currItemCat;
         }
 
         function renderStatistics() {
@@ -308,12 +344,9 @@
                 return matchesSearch && matchesCat && matchesRet;
             });
 
-            // Group by item name to find unique products
             const uniqueNames = [...new Set(filtered.map(i => i.name))];
             document.getElementById('statTotalItems').innerText = uniqueNames.length;
             document.getElementById('statCategories').innerText = categories.length;
-
-            const retailers = [...new Set(items.map(i => i.retailer))];
             document.getElementById('statRetailers').innerText = retailers.length;
 
             const avgPrice = filtered.length > 0 ? (filtered.reduce((sum, i) => sum + i.price, 0) / filtered.length) : 0;
@@ -332,9 +365,8 @@
                 return matchesSearch && matchesCat && matchesRet;
             });
 
-            // Group prices by item name
             const grouped = {};
-            filtered.forEach((item, index) => {
+            filtered.forEach((item) => {
                 if (!grouped[item.name]) {
                     grouped[item.name] = {
                         category: item.category,
@@ -358,7 +390,6 @@
 
             itemNames.forEach(name => {
                 const group = grouped[name];
-                // Find lowest price among retailers for this item
                 let minPrice = Infinity;
                 group.retailers.forEach(r => {
                     if (r.price < minPrice) minPrice = r.price;
@@ -409,7 +440,7 @@
             });
         }
 
-        // Modal Controls
+        // Item Modal Controls
         function openItemModal() {
             document.getElementById('modalTitle').innerText = 'Add Supermarket Item Price';
             document.getElementById('editIndex').value = '';
@@ -465,6 +496,59 @@
             if (confirm('Are you sure you want to remove this retailer price entry?')) {
                 items.splice(index, 1);
                 saveData();
+                renderDashboard();
+            }
+        }
+
+        // Retailer Management
+        function openRetailerModal() {
+            renderRetailerList();
+            document.getElementById('retailerModal').classList.remove('hidden');
+        }
+
+        function closeRetailerModal() {
+            document.getElementById('retailerModal').classList.add('hidden');
+        }
+
+        function renderRetailerList() {
+            const container = document.getElementById('retailerListContainer');
+            container.innerHTML = '';
+            retailers.forEach((ret, idx) => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 text-sm">
+                        <span>${ret}</span>
+                        <button onclick="deleteRetailer(${idx})" class="text-slate-400 hover:text-red-600 transition"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function addRetailer(event) {
+            event.preventDefault();
+            const input = document.getElementById('newRetailerInput');
+            const val = input.value.trim();
+            if (val && !retailers.includes(val)) {
+                retailers.push(val);
+                input.value = '';
+                saveData();
+                renderRetailerList();
+                renderDashboard();
+            } else {
+                alert('Retailer already exists or is empty.');
+            }
+        }
+
+        function deleteRetailer(index) {
+            const ret = retailers[index];
+            const inUse = items.some(i => i.retailer === ret);
+            if (inUse) {
+                alert('Cannot delete retailer because there are active item prices listed under it.');
+                return;
+            }
+            if (confirm(`Delete retailer "${ret}"?`)) {
+                retailers.splice(index, 1);
+                saveData();
+                renderRetailerList();
                 renderDashboard();
             }
         }
