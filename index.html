@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supermarket Price Comparison Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-200">
+    <div class="min-h-full flex flex-col">
+        <!-- Top Navigation Bar -->
+        <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                        <i class="fa-solid fa-store text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">HargaCompare</h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Supermarket Retail Price Intelligence</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="openCategoryModal()" class="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition">
+                        <i class="fa-solid fa-tags mr-2 text-brand-500"></i> Manage Categories
+                    </button>
+                    <button onclick="openItemModal()" class="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium shadow-sm transition">
+                        <i class="fa-solid fa-plus mr-2"></i> Add Item Price
+                    </button>
+                    <button onclick="toggleDarkMode()" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition" title="Toggle Dark Mode">
+                        <i class="fa-solid fa-moon dark:hidden"></i>
+                        <i class="fa-solid fa-sun hidden dark:inline"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            
+            <!-- Summary Statistic Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Unique Products</p>
+                        <h3 id="statTotalItems" class="text-2xl font-bold mt-0.5">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-tags"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Categories</p>
+                        <h3 id="statCategories" class="text-2xl font-bold mt-0.5">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Retailers Tracked</p>
+                        <h3 id="statRetailers" class="text-2xl font-bold mt-0.5">4</h3>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Average Listed Price</p>
+                        <h3 id="statAvgPrice" class="text-2xl font-bold mt-0.5">RM 0.00</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar & Filters -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="w-full md:w-96 relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-search"></i>
+                    </span>
+                    <input type="text" id="searchInput" oninput="renderDashboard()" placeholder="Search item name..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div class="w-full md:w-auto flex flex-wrap gap-3 items-center">
+                    <select id="categoryFilter" onchange="renderDashboard()" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="">All Categories</option>
+                    </select>
+                    <select id="retailerFilter" onchange="renderDashboard()" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="">All Retailers</option>
+                        <option value="Mydin">Mydin</option>
+                        <option value="Lotus's">Lotus's</option>
+                        <option value="Giant">Giant</option>
+                        <option value="AEON">AEON</option>
+                    </select>
+                    <button onclick="resetData()" class="px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition" title="Reset to default sample data">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Reset Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Consolidated Item Cards Container -->
+            <div id="itemCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Injected via JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">
+                <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 text-2xl mb-4">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200">No supermarket items found</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Try adjusting your search or category filter, or click "Add Item Price" to start tracking.</p>
+                <button onclick="openItemModal()" class="mt-4 inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium shadow-sm transition">
+                    <i class="fa-solid fa-plus mr-2"></i> Add Item
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add / Edit Item Modal -->
+    <div id="itemModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 id="modalTitle" class="font-bold text-lg">Add Supermarket Item Price</h3>
+                <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="itemForm" onsubmit="saveItem(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editIndex">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Item Name</label>
+                    <input type="text" id="itemNameInput" required placeholder="e.g. Jasmine Super Quality Rice 5kg" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
+                        <select id="itemCategoryInput" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Retailer / Supermarket</label>
+                        <select id="itemRetailerInput" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="Mydin">Mydin</option>
+                            <option value="Lotus's">Lotus's</option>
+                            <option value="Giant">Giant</option>
+                            <option value="AEON">AEON</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (RM)</label>
+                        <input type="number" step="0.01" min="0" id="itemPriceInput" required placeholder="0.00" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Stock Status</label>
+                        <select id="itemStockInput" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="In Stock">In Stock</option>
+                            <option value="Low Stock">Low Stock</option>
+                            <option value="Out of Stock">Out of Stock</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="closeItemModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Save Price</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div id="categoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="font-bold text-lg">Manage Categories</h3>
+                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <form onsubmit="addCategory(event)" class="flex gap-2">
+                    <input type="text" id="newCategoryInput" required placeholder="New category name..." class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Add</button>
+                </form>
+                <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                    <h4 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Existing Categories</h4>
+                    <div id="categoryListContainer" class="max-h-48 overflow-y-auto space-y-2 pr-1">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Default Sample Data
+        const defaultCategories = ['Rice & Grains', 'Dairy & Eggs', 'Beverages', 'Canned Goods', 'Cooking Oil'];
+        const defaultItems = [
+            { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: 'Mydin', price: 26.50, stock: 'In Stock' },
+            { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: "Lotus's", price: 28.20, stock: 'In Stock' },
+            { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: 'Giant', price: 27.90, stock: 'Low Stock' },
+            { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: 'AEON', price: 29.00, stock: 'In Stock' },
+            
+            { name: 'Farm Fresh UHT Milk 1L', category: 'Dairy & Eggs', retailer: 'Mydin', price: 6.80, stock: 'In Stock' },
+            { name: 'Farm Fresh UHT Milk 1L', category: 'Dairy & Eggs', retailer: "Lotus's", price: 6.50, stock: 'In Stock' },
+            { name: 'Farm Fresh UHT Milk 1L', category: 'Dairy & Eggs', retailer: 'Giant', price: 6.90, stock: 'In Stock' },
+            { name: 'Farm Fresh UHT Milk 1L', category: 'Dairy & Eggs', retailer: 'AEON', price: 7.20, stock: 'In Stock' },
+
+            { name: 'Nescafe 3-in-1 Original 28s', category: 'Beverages', retailer: 'Mydin', price: 15.90, stock: 'In Stock' },
+            { name: 'Nescafe 3-in-1 Original 28s', category: 'Beverages', retailer: "Lotus's", price: 14.80, stock: 'In Stock' },
+            { name: 'Nescafe 3-in-1 Original 28s', category: 'Beverages', retailer: 'Giant', price: 16.20, stock: 'Low Stock' },
+
+            { name: 'Saji Cooking Oil 5kg', category: 'Cooking Oil', retailer: 'Mydin', price: 30.50, stock: 'In Stock' },
+            { name: 'Saji Cooking Oil 5kg', category: 'Cooking Oil', retailer: "Lotus's", price: 30.00, stock: 'In Stock' },
+            { name: 'Saji Cooking Oil 5kg', category: 'Cooking Oil', retailer: 'AEON', price: 31.20, stock: 'In Stock' }
+        ];
+
+        let categories = JSON.parse(localStorage.getItem('supermarket_categories')) || defaultCategories;
+        let items = JSON.parse(localStorage.getItem('supermarket_items')) || defaultItems;
+
+        // Dark mode initialization
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function saveData() {
+            localStorage.setItem('supermarket_categories', JSON.stringify(categories));
+            localStorage.setItem('supermarket_items', JSON.stringify(items));
+        }
+
+        function resetData() {
+            if(confirm('Reset all items and categories to default sample data?')) {
+                categories = [...defaultCategories];
+                items = [...defaultItems];
+                saveData();
+                renderDashboard();
+            }
+        }
+
+        // Initialization on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDashboard();
+        });
+
+        function renderDashboard() {
+            updateCategoryDropdowns();
+            renderStatistics();
+            renderConsolidatedCards();
+        }
+
+        function updateCategoryDropdowns() {
+            const filterSelect = document.getElementById('categoryFilter');
+            const modalSelect = document.getElementById('itemCategoryInput');
+            const currentFilter = filterSelect.value;
+            const currentModalVal = modalSelect.value;
+
+            filterSelect.innerHTML = '<option value="">All Categories</option>';
+            modalSelect.innerHTML = '';
+
+            categories.forEach(cat => {
+                filterSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+                modalSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            filterSelect.value = currentFilter;
+            if (categories.includes(currentModalVal)) modalSelect.value = currentModalVal;
+        }
+
+        function renderStatistics() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const catFilter = document.getElementById('categoryFilter').value;
+            const retFilter = document.getElementById('retailerFilter').value;
+
+            const filtered = items.filter(i => {
+                const matchesSearch = i.name.toLowerCase().includes(searchQuery);
+                const matchesCat = !catFilter || i.category === catFilter;
+                const matchesRet = !retFilter || i.retailer === retFilter;
+                return matchesSearch && matchesCat && matchesRet;
+            });
+
+            // Group by item name to find unique products
+            const uniqueNames = [...new Set(filtered.map(i => i.name))];
+            document.getElementById('statTotalItems').innerText = uniqueNames.length;
+            document.getElementById('statCategories').innerText = categories.length;
+
+            const retailers = [...new Set(items.map(i => i.retailer))];
+            document.getElementById('statRetailers').innerText = retailers.length;
+
+            const avgPrice = filtered.length > 0 ? (filtered.reduce((sum, i) => sum + i.price, 0) / filtered.length) : 0;
+            document.getElementById('statAvgPrice').innerText = `RM ${avgPrice.toFixed(2)}`;
+        }
+
+        function renderConsolidatedCards() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const catFilter = document.getElementById('categoryFilter').value;
+            const retFilter = document.getElementById('retailerFilter').value;
+
+            const filtered = items.filter(i => {
+                const matchesSearch = i.name.toLowerCase().includes(searchQuery);
+                const matchesCat = !catFilter || i.category === catFilter;
+                const matchesRet = !retFilter || i.retailer === retFilter;
+                return matchesSearch && matchesCat && matchesRet;
+            });
+
+            // Group prices by item name
+            const grouped = {};
+            filtered.forEach((item, index) => {
+                if (!grouped[item.name]) {
+                    grouped[item.name] = {
+                        category: item.category,
+                        retailers: []
+                    };
+                }
+                grouped[item.name].retailers.push({ ...item, globalIndex: items.indexOf(item) });
+            });
+
+            const grid = document.getElementById('itemCardsGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            const itemNames = Object.keys(grouped);
+            if (itemNames.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            itemNames.forEach(name => {
+                const group = grouped[name];
+                // Find lowest price among retailers for this item
+                let minPrice = Infinity;
+                group.retailers.forEach(r => {
+                    if (r.price < minPrice) minPrice = r.price;
+                });
+
+                let retailersHtml = '';
+                group.retailers.forEach(r => {
+                    const isBest = r.price === minPrice;
+                    let stockBadgeColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400';
+                    if (r.stock === 'Low Stock') stockBadgeColor = 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400';
+                    if (r.stock === 'Out of Stock') stockBadgeColor = 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400';
+
+                    retailersHtml += `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50">
+                            <div class="flex items-center space-x-2">
+                                <span class="font-medium text-sm text-slate-700 dark:text-slate-200">${r.retailer}</span>
+                                ${isBest ? '<span class="px-2 py-0.5 text-[10px] font-bold bg-brand-500 text-white rounded-full shadow-sm"><i class="fa-solid fa-award mr-1"></i>Best Deal</span>' : ''}
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs px-2 py-0.5 rounded-md font-medium ${stockBadgeColor}">${r.stock}</span>
+                                <span class="font-bold text-sm text-slate-900 dark:text-white">RM ${r.price.toFixed(2)}</span>
+                                <div class="flex items-center space-x-1 border-l border-slate-200 dark:border-slate-700 pl-2">
+                                    <button onclick="editItem(${r.globalIndex})" class="p-1 text-slate-400 hover:text-blue-600 transition" title="Edit Price"><i class="fa-solid fa-pen text-xs"></i></button>
+                                    <button onclick="deleteItem(${r.globalIndex})" class="p-1 text-slate-400 hover:text-red-600 transition" title="Delete Price"><i class="fa-solid fa-trash text-xs"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                grid.innerHTML += `
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden">
+                        <div class="p-5 border-b border-slate-100 dark:border-slate-700">
+                            <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 rounded-lg mb-2">${group.category}</span>
+                            <h3 class="font-bold text-base text-slate-900 dark:text-white leading-snug">${name}</h3>
+                        </div>
+                        <div class="p-4 space-y-2 bg-white dark:bg-slate-800">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Retailer Price Breakdown</p>
+                            ${retailersHtml}
+                        </div>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 text-right">
+                            <button onclick="openItemModalForName('${name}', '${group.category}')" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+                                <i class="fa-solid fa-plus mr-1"></i> Add Another Retailer Price
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Modal Controls
+        function openItemModal() {
+            document.getElementById('modalTitle').innerText = 'Add Supermarket Item Price';
+            document.getElementById('editIndex').value = '';
+            document.getElementById('itemForm').reset();
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function openItemModalForName(name, category) {
+            openItemModal();
+            document.getElementById('itemNameInput').value = name;
+            document.getElementById('itemCategoryInput').value = category;
+        }
+
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.add('hidden');
+        }
+
+        function saveItem(event) {
+            event.preventDefault();
+            const editIdx = document.getElementById('editIndex').value;
+            const newItem = {
+                name: document.getElementById('itemNameInput').value.trim(),
+                category: document.getElementById('itemCategoryInput').value,
+                retailer: document.getElementById('itemRetailerInput').value,
+                price: parseFloat(document.getElementById('itemPriceInput').value),
+                stock: document.getElementById('itemStockInput').value
+            };
+
+            if (editIdx !== '') {
+                items[parseInt(editIdx)] = newItem;
+            } else {
+                items.push(newItem);
+            }
+
+            saveData();
+            closeItemModal();
+            renderDashboard();
+        }
+
+        function editItem(index) {
+            const item = items[index];
+            document.getElementById('modalTitle').innerText = 'Edit Supermarket Item Price';
+            document.getElementById('editIndex').value = index;
+            document.getElementById('itemNameInput').value = item.name;
+            document.getElementById('itemCategoryInput').value = item.category;
+            document.getElementById('itemRetailerInput').value = item.retailer;
+            document.getElementById('itemPriceInput').value = item.price;
+            document.getElementById('itemStockInput').value = item.stock;
+            document.getElementById('itemModal').classList.remove('hidden');
+        }
+
+        function deleteItem(index) {
+            if (confirm('Are you sure you want to remove this retailer price entry?')) {
+                items.splice(index, 1);
+                saveData();
+                renderDashboard();
+            }
+        }
+
+        // Category Management
+        function openCategoryModal() {
+            renderCategoryList();
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+        }
+
+        function renderCategoryList() {
+            const container = document.getElementById('categoryListContainer');
+            container.innerHTML = '';
+            categories.forEach((cat, idx) => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 text-sm">
+                        <span>${cat}</span>
+                        <button onclick="deleteCategory(${idx})" class="text-slate-400 hover:text-red-600 transition"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function addCategory(event) {
+            event.preventDefault();
+            const input = document.getElementById('newCategoryInput');
+            const val = input.value.trim();
+            if (val && !categories.includes(val)) {
+                categories.push(val);
+                input.value = '';
+                saveData();
+                renderCategoryList();
+                renderDashboard();
+            } else {
+                alert('Category already exists or is empty.');
+            }
+        }
+
+        function deleteCategory(index) {
+            const cat = categories[index];
+            const inUse = items.some(i => i.category === cat);
+            if (inUse) {
+                alert('Cannot delete category because it is currently assigned to items.');
+                return;
+            }
+            if (confirm(`Delete category "${cat}"?`)) {
+                categories.splice(index, 1);
+                saveData();
+                renderCategoryList();
+                renderDashboard();
+            }
+        }
+    </script>
+</body>
+</html>
