@@ -38,14 +38,14 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight">HargaCompare</h1>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Supermarket Retail Price Intelligence</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Google Sheets Connected</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 sm:space-x-3">
-                    <button onclick="openRetailerModal()" class="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition">
+                    <button onclick="openRetailerModal()" class="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-store mr-1.5 text-brand-500"></i> Retailers
                     </button>
-                    <button onclick="openCategoryModal()" class="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition">
+                    <button onclick="openCategoryModal()" class="inline-flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-tags mr-1.5 text-brand-500"></i> Categories
                     </button>
                     <button onclick="openItemModal()" class="inline-flex items-center px-3 sm:px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs sm:text-sm font-medium shadow-sm transition">
@@ -61,7 +61,11 @@
 
         <!-- Main Content Area -->
         <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-            
+            <!-- Loading Banner -->
+            <div id="loadingBanner" class="hidden text-center py-3 bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 rounded-xl text-sm font-medium">
+                <i class="fa-solid fa-spinner fa-spin mr-2"></i> Syncing with Google Sheets...
+            </div>
+
             <!-- Summary Statistic Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center space-x-4">
@@ -104,9 +108,7 @@
 
             <!-- Category Tabs Row -->
             <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <div class="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar" id="categoryTabsContainer">
-                    <!-- Injected dynamically via JS -->
-                </div>
+                <div class="flex items-center space-x-2 overflow-x-auto pb-1" id="categoryTabsContainer"></div>
             </div>
 
             <!-- Toolbar & Filters -->
@@ -118,19 +120,17 @@
                     <input type="text" id="searchInput" oninput="renderDashboard()" placeholder="Search item name..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
                 <div class="w-full md:w-auto flex flex-wrap gap-3 items-center">
-                    <select id="retailerFilter" onchange="renderDashboard()" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <select id="retailerFilter" onchange="renderDashboard()" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm">
                         <option value="">All Retailers</option>
                     </select>
-                    <button onclick="resetData()" class="px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition" title="Reset to default sample data">
-                        <i class="fa-solid fa-rotate-right mr-1"></i> Reset Data
+                    <button onclick="fetchDataFromSheet()" class="px-3 py-2 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-lg transition" title="Refresh Data">
+                        <i class="fa-solid fa-rotate mr-1"></i> Refresh Data
                     </button>
                 </div>
             </div>
 
             <!-- Consolidated Item Cards Container -->
-            <div id="itemCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Injected via JavaScript -->
-            </div>
+            <div id="itemCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
             <!-- Empty State -->
             <div id="emptyState" class="hidden text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">
@@ -146,128 +146,49 @@
         </main>
     </div>
 
-    <!-- Add / Edit Item Modal -->
+    <!-- Add Item Modal (Stock Removed) -->
     <div id="itemModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
             <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h3 id="modalTitle" class="font-bold text-lg">Add Supermarket Item Price</h3>
-                <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="font-bold text-lg">Add Supermarket Item Price</h3>
+                <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="itemForm" onsubmit="saveItem(event)" class="p-6 space-y-4">
-                <input type="hidden" id="editIndex">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Item Name</label>
-                    <input type="text" id="itemNameInput" required placeholder="e.g. Jasmine Super Quality Rice 5kg" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <input type="text" id="itemNameInput" required placeholder="e.g. Jasmine Super Quality Rice 5kg" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
-                        <select id="itemCategoryInput" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                            <!-- Populated dynamically -->
-                        </select>
+                        <select id="itemCategoryInput" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"></select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Retailer</label>
-                        <select id="itemRetailerInput" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                            <!-- Populated dynamically -->
-                        </select>
+                        <select id="itemRetailerInput" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"></select>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (RM)</label>
-                        <input type="number" step="0.01" min="0" id="itemPriceInput" required placeholder="0.00" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Stock Status</label>
-                        <select id="itemStockInput" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                            <option value="In Stock">In Stock</option>
-                            <option value="Low Stock">Low Stock</option>
-                            <option value="Out of Stock">Out of Stock</option>
-                        </select>
-                    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (RM)</label>
+                    <input type="number" step="0.01" min="0" id="itemPriceInput" required placeholder="0.00" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm">
                 </div>
                 <div class="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                    <button type="button" onclick="closeItemModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition">Cancel</button>
+                    <button type="button" onclick="closeItemModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300">Cancel</button>
                     <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Save Price</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Retailer Management Modal -->
-    <div id="retailerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
-            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h3 class="font-bold text-lg">Manage Retailers</h3>
-                <button onclick="closeRetailerModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <form id="retailerForm" onsubmit="saveRetailer(event)" class="flex gap-2">
-                    <input type="hidden" id="editRetailerIndex">
-                    <input type="text" id="newRetailerInput" required placeholder="Supermarket name..." class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    <button type="submit" id="retailerSubmitBtn" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Add</button>
-                </form>
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
-                    <h4 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Existing Retailers</h4>
-                    <div id="retailerListContainer" class="max-h-48 overflow-y-auto space-y-2 pr-1">
-                        <!-- Populated via JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Category Management Modal -->
-    <div id="categoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
-            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h3 class="font-bold text-lg">Manage Categories</h3>
-                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <form onsubmit="addCategory(event)" class="flex gap-2">
-                    <input type="text" id="newCategoryInput" required placeholder="New category name..." class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Add</button>
-                </form>
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
-                    <h4 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Existing Categories</h4>
-                    <div id="categoryListContainer" class="max-h-48 overflow-y-auto space-y-2 pr-1">
-                        <!-- Populated via JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- JavaScript Application Logic -->
     <script>
-        const defaultRetailers = ['Mydin', "Lotus's", 'Giant', 'AEON'];
-        const defaultCategories = ['Rice & Grains', 'Dairy & Eggs', 'Beverages', 'Canned Goods', 'Cooking Oil'];
-        const defaultItems = [
-            { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: 'Mydin', price: 26.50, stock: 'In Stock' },
-            { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: "Lotus's", price: 28.20, stock: 'In Stock' },
-            { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: 'Giant', price: 27.90, stock: 'Low Stock' },
-            { name: 'Jasmine Super Quality Rice 5kg', category: 'Rice & Grains', retailer: 'AEON', price: 29.00, stock: 'In Stock' },
-            
-            { name: 'Farm Fresh UHT Milk 1L', category: 'Dairy & Eggs', retailer: 'Mydin', price: 6.80, stock: 'In Stock' },
-            { name: 'Farm Fresh UHT Milk 1L', category: 'Dairy & Eggs', retailer: "Lotus's", price: 6.50, stock: 'In Stock' },
-            { name: 'Farm Fresh UHT Milk 1L', category: 'Dairy & Eggs', retailer: 'Giant', price: 6.90, stock: 'In Stock' },
-            { name: 'Farm Fresh UHT Milk 1L', category: 'Dairy & Eggs', retailer: 'AEON', price: 7.20, stock: 'In Stock' },
+        // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
+        const API_URL = "https://script.google.com/macros/s/AKfycbx9Ie5iPR1HxtK1mfSFdtKY5AVjGeFnfb3fIVR0C4jvWzteQdmplv8z57LG9URsc4IR/exec";
 
-            { name: 'Nescafe 3-in-1 Original 28s', category: 'Beverages', retailer: 'Mydin', price: 15.90, stock: 'In Stock' },
-            { name: 'Nescafe 3-in-1 Original 28s', category: 'Beverages', retailer: "Lotus's", price: 14.80, stock: 'In Stock' },
-            { name: 'Nescafe 3-in-1 Original 28s', category: 'Beverages', retailer: 'Giant', price: 16.20, stock: 'Low Stock' },
-
-            { name: 'Saji Cooking Oil 5kg', category: 'Cooking Oil', retailer: 'Mydin', price: 30.50, stock: 'In Stock' },
-            { name: 'Saji Cooking Oil 5kg', category: 'Cooking Oil', retailer: "Lotus's", price: 30.00, stock: 'In Stock' },
-            { name: 'Saji Cooking Oil 5kg', category: 'Cooking Oil', retailer: 'AEON', price: 31.20, stock: 'In Stock' }
-        ];
-
-        let retailers = JSON.parse(localStorage.getItem('supermarket_retailers')) || defaultRetailers;
-        let categories = JSON.parse(localStorage.getItem('supermarket_categories')) || defaultCategories;
-        let items = JSON.parse(localStorage.getItem('supermarket_items')) || defaultItems;
-        let activeCategory = ''; // Empty string means "All Categories"
+        let items = [];
+        let categories = [];
+        let retailers = [];
+        let activeCategory = '';
 
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
@@ -277,26 +198,40 @@
             document.documentElement.classList.toggle('dark');
         }
 
-        function saveData() {
-            localStorage.setItem('supermarket_retailers', JSON.stringify(retailers));
-            localStorage.setItem('supermarket_categories', JSON.stringify(categories));
-            localStorage.setItem('supermarket_items', JSON.stringify(items));
-        }
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchDataFromSheet();
+        });
 
-        function resetData() {
-            if(confirm('Reset all items, categories, and retailers to default sample data?')) {
-                retailers = [...defaultRetailers];
-                categories = [...defaultCategories];
-                items = [...defaultItems];
-                activeCategory = '';
-                saveData();
+        async function fetchDataFromSheet() {
+            document.getElementById('loadingBanner').classList.remove('hidden');
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                items = data.items || [];
+                categories = data.categories || [];
+                retailers = data.retailers || [];
                 renderDashboard();
+            } catch (err) {
+                alert('Error connecting to Google Sheets. Check your API URL.');
+                console.error(err);
+            } finally {
+                document.getElementById('loadingBanner').classList.add('hidden');
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            renderDashboard();
-        });
+        async function sendToBeacon(payload) {
+            document.getElementById('loadingBanner').classList.remove('hidden');
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                await fetchDataFromSheet();
+            } catch (err) {
+                alert('Failed to save to Google Sheet.');
+                document.getElementById('loadingBanner').classList.add('hidden');
+            }
+        }
 
         function renderDashboard() {
             updateDropdowns();
@@ -308,8 +243,11 @@
         function updateDropdowns() {
             const retFilter = document.getElementById('retailerFilter');
             const itemRetModal = document.getElementById('itemRetailerInput');
+            const itemCatModal = document.getElementById('itemCategoryInput');
+            
             const currRetFilter = retFilter.value;
             const currItemRet = itemRetModal.value;
+            const currItemCat = itemCatModal.value;
 
             retFilter.innerHTML = '<option value="">All Retailers</option>';
             itemRetModal.innerHTML = '';
@@ -320,8 +258,6 @@
             retFilter.value = currRetFilter;
             if (retailers.includes(currItemRet)) itemRetModal.value = currItemRet;
 
-            const itemCatModal = document.getElementById('itemCategoryInput');
-            const currItemCat = itemCatModal.value;
             itemCatModal.innerHTML = '';
             categories.forEach(cat => {
                 itemCatModal.innerHTML += `<option value="${cat}">${cat}</option>`;
@@ -332,20 +268,16 @@
         function renderCategoryTabs() {
             const container = document.getElementById('categoryTabsContainer');
             container.innerHTML = '';
-
-            // "All" Tab
             const allActive = activeCategory === '';
             container.innerHTML += `
-                <button onclick="selectCategory('')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap ${allActive ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}">
+                <button onclick="selectCategory('')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap ${allActive ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}">
                     <i class="fa-solid fa-border-all mr-1.5"></i> All Categories
                 </button>
             `;
-
-            // Category Tabs
             categories.forEach(cat => {
                 const isActive = activeCategory === cat;
                 container.innerHTML += `
-                    <button onclick="selectCategory('${cat}')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap ${isActive ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}">
+                    <button onclick="selectCategory('${cat}')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap ${isActive ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}">
                         ${cat}
                     </button>
                 `;
@@ -373,7 +305,7 @@
             document.getElementById('statCategories').innerText = categories.length;
             document.getElementById('statRetailers').innerText = retailers.length;
 
-            const avgPrice = filtered.length > 0 ? (filtered.reduce((sum, i) => sum + i.price, 0) / filtered.length) : 0;
+            const avgPrice = filtered.length > 0 ? (filtered.reduce((sum, i) => sum + parseFloat(i.price || 0), 0) / filtered.length) : 0;
             document.getElementById('statAvgPrice').innerText = `RM ${avgPrice.toFixed(2)}`;
         }
 
@@ -391,12 +323,9 @@
             const grouped = {};
             filtered.forEach((item) => {
                 if (!grouped[item.name]) {
-                    grouped[item.name] = {
-                        category: item.category,
-                        retailers: []
-                    };
+                    grouped[item.name] = { category: item.category, retailers: [] };
                 }
-                grouped[item.name].retailers.push({ ...item, globalIndex: items.indexOf(item) });
+                grouped[item.name].retailers.push(item);
             });
 
             const grid = document.getElementById('itemCardsGrid');
@@ -415,16 +344,14 @@
                 const group = grouped[name];
                 let minPrice = Infinity;
                 group.retailers.forEach(r => {
-                    if (r.price < minPrice) minPrice = r.price;
+                    const p = parseFloat(r.price);
+                    if (p < minPrice) minPrice = p;
                 });
 
                 let retailersHtml = '';
                 group.retailers.forEach(r => {
-                    const isBest = r.price === minPrice;
-                    let stockBadgeColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400';
-                    if (r.stock === 'Low Stock') stockBadgeColor = 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400';
-                    if (r.stock === 'Out of Stock') stockBadgeColor = 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400';
-
+                    const priceNum = parseFloat(r.price);
+                    const isBest = priceNum === minPrice;
                     retailersHtml += `
                         <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50">
                             <div class="flex items-center space-x-2">
@@ -432,19 +359,15 @@
                                 ${isBest ? '<span class="px-2 py-0.5 text-[10px] font-bold bg-brand-500 text-white rounded-full shadow-sm"><i class="fa-solid fa-award mr-1"></i>Best Deal</span>' : ''}
                             </div>
                             <div class="flex items-center space-x-3">
-                                <span class="text-xs px-2 py-0.5 rounded-md font-medium ${stockBadgeColor}">${r.stock}</span>
-                                <span class="font-bold text-sm text-slate-900 dark:text-white">RM ${r.price.toFixed(2)}</span>
-                                <div class="flex items-center space-x-1 border-l border-slate-200 dark:border-slate-700 pl-2">
-                                    <button onclick="editItem(${r.globalIndex})" class="p-1 text-slate-400 hover:text-blue-600 transition" title="Edit Price"><i class="fa-solid fa-pen text-xs"></i></button>
-                                    <button onclick="deleteItem(${r.globalIndex})" class="p-1 text-slate-400 hover:text-red-600 transition" title="Delete Price"><i class="fa-solid fa-trash text-xs"></i></button>
-                                </div>
+                                <span class="font-bold text-sm text-slate-900 dark:text-white">RM ${priceNum.toFixed(2)}</span>
+                                <button onclick="deleteItem('${r.name}', '${r.retailer}')" class="p-1 text-slate-400 hover:text-red-600 transition" title="Delete Price"><i class="fa-solid fa-trash text-xs"></i></button>
                             </div>
                         </div>
                     `;
                 });
 
                 grid.innerHTML += `
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between overflow-hidden">
                         <div class="p-5 border-b border-slate-100 dark:border-slate-700">
                             <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 rounded-lg mb-2">${group.category}</span>
                             <h3 class="font-bold text-base text-slate-900 dark:text-white leading-snug">${name}</h3>
@@ -454,24 +377,16 @@
                             ${retailersHtml}
                         </div>
                         <div class="p-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 text-right">
-                            <button onclick="openItemModalForName('${name}', '${group.category}')" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
-                                <i class="fa-solid fa-plus mr-1"></i> Add Another Retailer Price
-                            </button>
+                            <button onclick="openItemModalForName('${name}', '${group.category}')" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"><i class="fa-solid fa-plus mr-1"></i> Add Another Retailer Price</button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // Item Modal Controls
         function openItemModal() {
-            document.getElementById('modalTitle').innerText = 'Add Supermarket Item Price';
-            document.getElementById('editIndex').value = '';
             document.getElementById('itemForm').reset();
-            // If user is currently viewing a specific category tab, preset it in the modal
-            if (activeCategory) {
-                document.getElementById('itemCategoryInput').value = activeCategory;
-            }
+            if (activeCategory) document.getElementById('itemCategoryInput').value = activeCategory;
             document.getElementById('itemModal').classList.remove('hidden');
         }
 
@@ -485,185 +400,22 @@
             document.getElementById('itemModal').classList.add('hidden');
         }
 
-        function saveItem(event) {
+        async function saveItem(event) {
             event.preventDefault();
-            const editIdx = document.getElementById('editIndex').value;
             const newItem = {
+                action: 'saveItem',
                 name: document.getElementById('itemNameInput').value.trim(),
                 category: document.getElementById('itemCategoryInput').value,
                 retailer: document.getElementById('itemRetailerInput').value,
-                price: parseFloat(document.getElementById('itemPriceInput').value),
-                stock: document.getElementById('itemStockInput').value
+                price: document.getElementById('itemPriceInput').value
             };
-
-            if (editIdx !== '') {
-                items[parseInt(editIdx)] = newItem;
-            } else {
-                items.push(newItem);
-            }
-
-            saveData();
             closeItemModal();
-            renderDashboard();
+            await sendToBeacon(newItem);
         }
 
-        function editItem(index) {
-            const item = items[index];
-            document.getElementById('modalTitle').innerText = 'Edit Supermarket Item Price';
-            document.getElementById('editIndex').value = index;
-            document.getElementById('itemNameInput').value = item.name;
-            document.getElementById('itemCategoryInput').value = item.category;
-            document.getElementById('itemRetailerInput').value = item.retailer;
-            document.getElementById('itemPriceInput').value = item.price;
-            document.getElementById('itemStockInput').value = item.stock;
-            document.getElementById('itemModal').classList.remove('hidden');
-        }
-
-        function deleteItem(index) {
-            if (confirm('Are you sure you want to remove this retailer price entry?')) {
-                items.splice(index, 1);
-                saveData();
-                renderDashboard();
-            }
-        }
-
-        // Retailer Management
-        function openRetailerModal() {
-            document.getElementById('editRetailerIndex').value = '';
-            document.getElementById('newRetailerInput').value = '';
-            document.getElementById('retailerSubmitBtn').innerText = 'Add';
-            renderRetailerList();
-            document.getElementById('retailerModal').classList.remove('hidden');
-        }
-
-        function closeRetailerModal() {
-            document.getElementById('retailerModal').classList.add('hidden');
-        }
-
-        function renderRetailerList() {
-            const container = document.getElementById('retailerListContainer');
-            container.innerHTML = '';
-            retailers.forEach((ret, idx) => {
-                container.innerHTML += `
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 text-sm">
-                        <span>${ret}</span>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="editRetailer(${idx})" class="p-1 text-slate-400 hover:text-blue-600 transition" title="Edit Retailer"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="deleteRetailer(${idx})" class="p-1 text-slate-400 hover:text-red-600 transition" title="Delete Retailer"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function saveRetailer(event) {
-            event.preventDefault();
-            const editIdx = document.getElementById('editRetailerIndex').value;
-            const input = document.getElementById('newRetailerInput');
-            const val = input.value.trim();
-
-            if (!val) return;
-
-            if (editIdx !== '') {
-                const oldName = retailers[parseInt(editIdx)];
-                if (retailers.includes(val) && val !== oldName) {
-                    alert('Retailer name already exists.');
-                    return;
-                }
-                retailers[parseInt(editIdx)] = val;
-                items.forEach(i => {
-                    if (i.retailer === oldName) i.retailer = val;
-                });
-                document.getElementById('editRetailerIndex').value = '';
-                document.getElementById('retailerSubmitBtn').innerText = 'Add';
-            } else {
-                if (retailers.includes(val)) {
-                    alert('Retailer already exists.');
-                    return;
-                }
-                retailers.push(val);
-            }
-
-            input.value = '';
-            saveData();
-            renderRetailerList();
-            renderDashboard();
-        }
-
-        function editRetailer(index) {
-            document.getElementById('editRetailerIndex').value = index;
-            document.getElementById('newRetailerInput').value = retailers[index];
-            document.getElementById('retailerSubmitBtn').innerText = 'Update';
-            document.getElementById('newRetailerInput').focus();
-        }
-
-        function deleteRetailer(index) {
-            const ret = retailers[index];
-            const inUse = items.some(i => i.retailer === ret);
-            if (inUse) {
-                alert('Cannot delete retailer because there are active item prices listed under it.');
-                return;
-            }
-            if (confirm(`Delete retailer "${ret}"?`)) {
-                retailers.splice(index, 1);
-                saveData();
-                renderRetailerList();
-                renderDashboard();
-            }
-        }
-
-        // Category Management
-        function openCategoryModal() {
-            renderCategoryList();
-            document.getElementById('categoryModal').classList.remove('hidden');
-        }
-
-        function closeCategoryModal() {
-            document.getElementById('categoryModal').classList.add('hidden');
-        }
-
-        function renderCategoryList() {
-            const container = document.getElementById('categoryListContainer');
-            container.innerHTML = '';
-            categories.forEach((cat, idx) => {
-                container.innerHTML += `
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 text-sm">
-                        <span>${cat}</span>
-                        <button onclick="deleteCategory(${idx})" class="text-slate-400 hover:text-red-600 transition"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </div>
-                `;
-            });
-        }
-
-        function addCategory(event) {
-            event.preventDefault();
-            const input = document.getElementById('newCategoryInput');
-            const val = input.value.trim();
-            if (val && !categories.includes(val)) {
-                categories.push(val);
-                input.value = '';
-                saveData();
-                renderCategoryList();
-                renderDashboard();
-            } else {
-                alert('Category already exists or is empty.');
-            }
-        }
-
-        function deleteCategory(index) {
-            const cat = categories[index];
-            const inUse = items.some(i => i.category === cat);
-            if (inUse) {
-                alert('Cannot delete category because it is currently assigned to items.');
-                return;
-            }
-            if (confirm(`Delete category "${cat}"?`)) {
-                categories.splice(index, 1);
-                // If active category was deleted, reset to all
-                if (activeCategory === cat) activeCategory = '';
-                saveData();
-                renderCategoryList();
-                renderDashboard();
+        async function deleteItem(name, retailer) {
+            if (confirm(`Remove price entry for ${name} at ${retailer}?`)) {
+                await sendToBeacon({ action: 'deleteItem', name: name, retailer: retailer });
             }
         }
     </script>
