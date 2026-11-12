@@ -37,7 +37,7 @@
                         <i class="fa-solid fa-store text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg leading-tight">Price Comparison</h1>
+                        <h1 class="font-bold text-lg leading-tight">HargaCompare</h1>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Supermarket Retail Price Intelligence</p>
                     </div>
                 </div>
@@ -102,6 +102,13 @@
                 </div>
             </div>
 
+            <!-- Category Tabs Row -->
+            <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar" id="categoryTabsContainer">
+                    <!-- Injected dynamically via JS -->
+                </div>
+            </div>
+
             <!-- Toolbar & Filters -->
             <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="w-full md:w-96 relative">
@@ -111,9 +118,6 @@
                     <input type="text" id="searchInput" oninput="renderDashboard()" placeholder="Search item name..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
                 <div class="w-full md:w-auto flex flex-wrap gap-3 items-center">
-                    <select id="categoryFilter" onchange="renderDashboard()" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <option value="">All Categories</option>
-                    </select>
                     <select id="retailerFilter" onchange="renderDashboard()" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         <option value="">All Retailers</option>
                     </select>
@@ -134,7 +138,7 @@
                     <i class="fa-solid fa-box-open"></i>
                 </div>
                 <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200">No supermarket items found</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Try adjusting your search or filter, or click "Add Item" to start tracking.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">Try adjusting your search or category selection, or click "Add Item" to start tracking.</p>
                 <button onclick="openItemModal()" class="mt-4 inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium shadow-sm transition">
                     <i class="fa-solid fa-plus mr-2"></i> Add Item
                 </button>
@@ -263,6 +267,7 @@
         let retailers = JSON.parse(localStorage.getItem('supermarket_retailers')) || defaultRetailers;
         let categories = JSON.parse(localStorage.getItem('supermarket_categories')) || defaultCategories;
         let items = JSON.parse(localStorage.getItem('supermarket_items')) || defaultItems;
+        let activeCategory = ''; // Empty string means "All Categories"
 
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
@@ -283,6 +288,7 @@
                 retailers = [...defaultRetailers];
                 categories = [...defaultCategories];
                 items = [...defaultItems];
+                activeCategory = '';
                 saveData();
                 renderDashboard();
             }
@@ -294,6 +300,7 @@
 
         function renderDashboard() {
             updateDropdowns();
+            renderCategoryTabs();
             renderStatistics();
             renderConsolidatedCards();
         }
@@ -313,29 +320,50 @@
             retFilter.value = currRetFilter;
             if (retailers.includes(currItemRet)) itemRetModal.value = currItemRet;
 
-            const catFilter = document.getElementById('categoryFilter');
             const itemCatModal = document.getElementById('itemCategoryInput');
-            const currCatFilter = catFilter.value;
             const currItemCat = itemCatModal.value;
-
-            catFilter.innerHTML = '<option value="">All Categories</option>';
             itemCatModal.innerHTML = '';
             categories.forEach(cat => {
-                catFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
                 itemCatModal.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
-            catFilter.value = currCatFilter;
             if (categories.includes(currItemCat)) itemCatModal.value = currItemCat;
+        }
+
+        function renderCategoryTabs() {
+            const container = document.getElementById('categoryTabsContainer');
+            container.innerHTML = '';
+
+            // "All" Tab
+            const allActive = activeCategory === '';
+            container.innerHTML += `
+                <button onclick="selectCategory('')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap ${allActive ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}">
+                    <i class="fa-solid fa-border-all mr-1.5"></i> All Categories
+                </button>
+            `;
+
+            // Category Tabs
+            categories.forEach(cat => {
+                const isActive = activeCategory === cat;
+                container.innerHTML += `
+                    <button onclick="selectCategory('${cat}')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap ${isActive ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}">
+                        ${cat}
+                    </button>
+                `;
+            });
+        }
+
+        function selectCategory(cat) {
+            activeCategory = cat;
+            renderDashboard();
         }
 
         function renderStatistics() {
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            const catFilter = document.getElementById('categoryFilter').value;
             const retFilter = document.getElementById('retailerFilter').value;
 
             const filtered = items.filter(i => {
                 const matchesSearch = i.name.toLowerCase().includes(searchQuery);
-                const matchesCat = !catFilter || i.category === catFilter;
+                const matchesCat = !activeCategory || i.category === activeCategory;
                 const matchesRet = !retFilter || i.retailer === retFilter;
                 return matchesSearch && matchesCat && matchesRet;
             });
@@ -351,12 +379,11 @@
 
         function renderConsolidatedCards() {
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            const catFilter = document.getElementById('categoryFilter').value;
             const retFilter = document.getElementById('retailerFilter').value;
 
             const filtered = items.filter(i => {
                 const matchesSearch = i.name.toLowerCase().includes(searchQuery);
-                const matchesCat = !catFilter || i.category === catFilter;
+                const matchesCat = !activeCategory || i.category === activeCategory;
                 const matchesRet = !retFilter || i.retailer === retFilter;
                 return matchesSearch && matchesCat && matchesRet;
             });
@@ -441,6 +468,10 @@
             document.getElementById('modalTitle').innerText = 'Add Supermarket Item Price';
             document.getElementById('editIndex').value = '';
             document.getElementById('itemForm').reset();
+            // If user is currently viewing a specific category tab, preset it in the modal
+            if (activeCategory) {
+                document.getElementById('itemCategoryInput').value = activeCategory;
+            }
             document.getElementById('itemModal').classList.remove('hidden');
         }
 
@@ -539,9 +570,7 @@
                     alert('Retailer name already exists.');
                     return;
                 }
-                // Update retailer name in retailers array
                 retailers[parseInt(editIdx)] = val;
-                // Update retailer name in all associated items
                 items.forEach(i => {
                     if (i.retailer === oldName) i.retailer = val;
                 });
@@ -630,6 +659,8 @@
             }
             if (confirm(`Delete category "${cat}"?`)) {
                 categories.splice(index, 1);
+                // If active category was deleted, reset to all
+                if (activeCategory === cat) activeCategory = '';
                 saveData();
                 renderCategoryList();
                 renderDashboard();
