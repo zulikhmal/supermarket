@@ -35,7 +35,7 @@
                         <i class="fa-solid fa-store text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg leading-tight">PriceCompare</h1>
+                        <h1 class="font-bold text-lg leading-tight">HargaCompare</h1>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Google Sheets Connected</p>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
             </div>
 
             <!-- Summary Statistic Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center space-x-4">
                     <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-boxes-stacked"></i>
@@ -91,15 +91,6 @@
                     <div>
                         <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Retailers Tracked</p>
                         <h3 id="statRetailers" class="text-2xl font-bold mt-0.5">0</h3>
-                    </div>
-                </div>
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-coins"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Average Listed Price</p>
-                        <h3 id="statAvgPrice" class="text-2xl font-bold mt-0.5">RM 0.00</h3>
                     </div>
                 </div>
             </div>
@@ -195,10 +186,56 @@
         </div>
     </div>
 
+    <!-- Edit Product (name / category) Modal -->
+    <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="font-bold text-lg">Edit Item</h3>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="saveProduct(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Item Name</label>
+                    <input type="text" id="editProductName" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Category</label>
+                    <select id="editProductCategory" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"></select>
+                </div>
+                <p class="text-xs text-slate-400">This changes the name and category for all retailer prices of this item.</p>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Price Modal -->
+    <div id="priceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="font-bold text-lg">Edit Price</h3>
+                <button onclick="closePriceModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="savePrice(event)" class="p-6 space-y-4">
+                <p id="editPriceLabel" class="text-sm font-medium text-slate-600 dark:text-slate-300"></p>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Price (RM)</label>
+                    <input type="number" step="0.01" min="0" id="editPriceInput" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm">
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="closePriceModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium shadow-sm transition">Save Price</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // ============ CONFIG ============
         // Paste your Google Apps Script Web App URL (ends with /exec)
-        const API_URL = "https://script.google.com/macros/s/AKfycbxwPcuY80R5ISreLc7YplJ4TStyU-LTALFJYU0tRHSLhll-BGqHm_UfgwBLc1pSyxPs/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzYiY8J9HsHRybZygXmNjwTNYKCA1lLBoGQ0bw3iVr8bQpt343IK95iB_C1rAYAPaOH/exec";
 
         let items = [];
         let categories = [];
@@ -330,10 +367,6 @@
             document.getElementById('statCategories').innerText = categories.length;
             document.getElementById('statRetailers').innerText = retailers.length;
 
-            const avg = filtered.length
-                ? filtered.reduce((s, i) => s + (parseFloat(i.price) || 0), 0) / filtered.length
-                : 0;
-            document.getElementById('statAvgPrice').innerText = `RM ${avg.toFixed(2)}`;
         }
 
         function renderConsolidatedCards() {
@@ -379,6 +412,7 @@
                             </div>
                             <div class="flex items-center space-x-3">
                                 <span class="font-bold text-sm text-slate-900 dark:text-white">RM ${priceNum.toFixed(2)}</span>
+                                <button data-name="${esc(r.name)}" data-category="${esc(r.category)}" data-retailer="${esc(r.retailer)}" data-price="${priceNum}" onclick="openPriceModal(this)" class="p-1 text-slate-400 hover:text-brand-600 transition" title="Edit Price"><i class="fa-solid fa-pen text-xs"></i></button>
                                 <button data-name="${esc(r.name)}" data-retailer="${esc(r.retailer)}" onclick="deleteItem(this)" class="p-1 text-slate-400 hover:text-red-600 transition" title="Delete Price"><i class="fa-solid fa-trash text-xs"></i></button>
                             </div>
                         </div>`;
@@ -388,7 +422,10 @@
                 <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between overflow-hidden">
                     <div class="p-5 border-b border-slate-100 dark:border-slate-700">
                         <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-brand-50 dark:bg-slate-700 text-brand-700 dark:text-brand-100 rounded-lg mb-2">${esc(group.category)}</span>
-                        <h3 class="font-bold text-base text-slate-900 dark:text-white leading-snug">${esc(name)}</h3>
+                        <div class="flex items-start justify-between gap-2">
+                            <h3 class="font-bold text-base text-slate-900 dark:text-white leading-snug">${esc(name)}</h3>
+                            <button data-name="${esc(name)}" data-category="${esc(group.category)}" onclick="openProductModal(this)" class="p-1 text-slate-400 hover:text-brand-600 transition shrink-0" title="Edit item name / category"><i class="fa-solid fa-pen text-xs"></i></button>
+                        </div>
                     </div>
                     <div class="p-4 space-y-2 bg-white dark:bg-slate-800">
                         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Retailer Price Breakdown</p>
@@ -442,6 +479,60 @@
             if (confirm(`Remove price entry for ${name} at ${retailer}?`)) {
                 await sendToSheet({ action: 'deleteItem', name, retailer });
             }
+        }
+
+        // ============ EDIT PRODUCT (name / category) ============
+        let editingProduct = null;
+
+        function openProductModal(btn) {
+            editingProduct = { name: btn.dataset.name, category: btn.dataset.category };
+            document.getElementById('editProductName').value = btn.dataset.name;
+            const sel = document.getElementById('editProductCategory');
+            sel.innerHTML = categories.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+            sel.value = btn.dataset.category;
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        async function saveProduct(event) {
+            event.preventDefault();
+            const newName = document.getElementById('editProductName').value.trim();
+            const category = document.getElementById('editProductCategory').value;
+            if (!newName) return;
+            const old = editingProduct;
+            closeProductModal();
+            if (newName === old.name && category === old.category) return;
+            await sendToSheet({ action: 'updateProduct', oldName: old.name, newName, category });
+        }
+
+        // ============ EDIT PRICE ============
+        let editingPrice = null;
+
+        function openPriceModal(btn) {
+            editingPrice = {
+                name: btn.dataset.name,
+                category: btn.dataset.category,
+                retailer: btn.dataset.retailer
+            };
+            document.getElementById('editPriceLabel').innerText = `${btn.dataset.name} @ ${btn.dataset.retailer}`;
+            document.getElementById('editPriceInput').value = parseFloat(btn.dataset.price).toFixed(2);
+            document.getElementById('priceModal').classList.remove('hidden');
+        }
+
+        function closePriceModal() {
+            document.getElementById('priceModal').classList.add('hidden');
+        }
+
+        async function savePrice(event) {
+            event.preventDefault();
+            const price = document.getElementById('editPriceInput').value;
+            const e = editingPrice;
+            closePriceModal();
+            // saveItem updates the price when name + retailer already exist
+            await sendToSheet({ action: 'saveItem', name: e.name, category: e.category, retailer: e.retailer, price });
         }
 
         // ============ RETAILERS / CATEGORIES MODAL ============
